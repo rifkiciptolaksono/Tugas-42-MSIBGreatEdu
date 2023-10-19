@@ -1,0 +1,38 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "contracts/Lock.sol": {
+      "content": "// SPDX-License-Identifier: UNLICENSED\npragma solidity ^0.8.9;\n\n// Uncomment this line to use console.log\n// import \"hardhat/console.sol\";\n\ncontract Lock {\n    uint public unlockTime;\n    address payable public owner;\n\n    event Withdrawal(uint amount, uint when);\n\n    constructor(uint _unlockTime) payable {\n        require(\n            block.timestamp < _unlockTime,\n            \"Unlock time should be in the future\"\n        );\n\n        unlockTime = _unlockTime;\n        owner = payable(msg.sender);\n    }\n\n    function withdraw() public {\n        // Uncomment this line, and the import of \"hardhat/console.sol\", to print a log in your terminal\n        // console.log(\"Unlock time is %o and block timestamp is %o\", unlockTime, block.timestamp);\n\n        require(block.timestamp >= unlockTime, \"You can't withdraw yet\");\n        require(msg.sender == owner, \"You aren't the owner\");\n\n        emit Withdrawal(address(this).balance, block.timestamp);\n\n        owner.transfer(address(this).balance);\n    }\n}\n"
+    },
+    "contracts/Perpustakaan.sol": {
+      "content": "// SPDX-License-Identifier: MIT\r\npragma solidity 0.8.13;\r\n\r\ncontract Perpustakaan{\r\n    address public admin;\r\n\r\n// mendefinisikan variabel identitas buku\r\n\r\n    struct identitas_buku{\r\n        uint256 isbn;\r\n        string Judul;\r\n        string penulis;\r\n        uint16 tahun_terbit;\r\n        bool benar;\r\n    }\r\n\r\n    mapping (uint256 => identitas_buku) public  buku;\r\n   \r\n    identitas_buku[] private  book; \r\n\r\n\r\n    // membuat event untuk melakukan perubahan buku, penambahan buku serta penghapusan buku\r\n\r\n    event addBuku(uint256 indexed isbn, string _Judul, string Nama_penulis, uint16 tahun_terbit);\r\n    event updateBuku(uint256 indexed isbn, string Judul_baru, string Nama_penulis_baru, uint16 tahun_terbit_baru);\r\n    event deleteBuku(uint256 indexed isbn);\r\n    event addadmin(address indexed id, string name);\r\n\r\n     modifier hanyaAdmin() {\r\n        require(msg.sender == admin, \"Hanya admin yang dapat mengedit\");\r\n        _;\r\n    }\r\n\r\n    constructor() {\r\n        admin = msg.sender;\r\n    }\r\n\r\n    function addbuku(uint256 _isbn, string calldata _judul, string calldata Nama_penulis, uint16  tahun_terbit ) public hanyaAdmin{\r\n    require(!buku[_isbn].benar, \"Maaf Buku dengan ISDN ini telah terdaftar\");\r\n        buku[_isbn] = identitas_buku(_isbn, _judul, Nama_penulis, tahun_terbit, true );\r\n        emit addBuku(_isbn, _judul, Nama_penulis, tahun_terbit);\r\n        book.push(identitas_buku(_isbn, _judul, Nama_penulis, tahun_terbit, true));\r\n        \r\n}\r\n\r\n    function updatebuku(uint256 _isbn, string memory Judul_baru, string memory Nama_penulis_baru, uint16  tahun_terbit_baru ) public hanyaAdmin{\r\n        require(buku[_isbn].benar, \"Maaf Buku dengan ISDN ini sudah diupdate\");\r\n        buku[_isbn].Judul = Judul_baru;\r\n        buku[_isbn].penulis = Nama_penulis_baru;\r\n        buku [_isbn].tahun_terbit= tahun_terbit_baru;\r\n        emit updateBuku(_isbn, Judul_baru, Nama_penulis_baru, tahun_terbit_baru);\r\n        for(uint256 i=0; i < book.length; i++)\r\n        if(book[i].isbn == _isbn){\r\n            book[i] = identitas_buku (_isbn, Judul_baru, Nama_penulis_baru, tahun_terbit_baru, true);\r\n        }\r\n        \r\n       \r\n}\r\n\r\n    function delatebuku(uint256 _isbn) public hanyaAdmin{\r\n        require(buku[_isbn].benar, \"Maaf Buku dengan ISDN ini telah dihapus\");\r\n        delete buku[_isbn];\r\n        emit deleteBuku(_isbn);\r\n         for(uint256 i=0; i < book.length; i++)\r\n        if(book[i].isbn == _isbn){\r\n             if (i < book.length - 1) {\r\n                    book[i] = book[book.length - 1];\r\n                }\r\n                book.pop();\r\n        }\r\n}\r\n\r\n    function getbuku(uint256 _isbn) public view returns(uint256 isbn, string memory Judul , string memory penulis , uint16 tahun_terbit){\r\n      for (uint256 i = 0; i < book.length; i++) {\r\n            if (book[i].isbn == _isbn) {\r\n                identitas_buku memory Buku = book[i];\r\n            return(Buku.isbn, Buku.Judul, Buku.penulis, Buku.tahun_terbit);           \r\n            \r\n        }\r\n}\r\n    }\r\n\r\nfunction getBukuLength() public view returns (uint256){\r\n        return book.length;\r\n}\r\n\r\n\r\n\r\n}"
+    }
+  },
+  "settings": {
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "abi",
+          "evm.bytecode",
+          "evm.deployedBytecode",
+          "evm.methodIdentifiers",
+          "metadata",
+          "devdoc",
+          "userdoc",
+          "storageLayout",
+          "evm.gasEstimates"
+        ],
+        "": [
+          "ast"
+        ]
+      }
+    },
+    "metadata": {
+      "useLiteralContent": true
+    }
+  }
+}
